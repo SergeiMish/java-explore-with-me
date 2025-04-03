@@ -22,6 +22,11 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
+	<modules>
+		<module>main-service</module>
+		<module>stats</module>
+	</modules>
+
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -58,7 +63,16 @@
 							<artifactId>checkstyle</artifactId>
 							<version>10.3</version>
 						</dependency>
+						<dependency>
+							<groupId>org.postgresql</groupId>
+							<artifactId>postgresql</artifactId>
+							<scope>runtime</scope>
+						</dependency>
 					</dependencies>
+				</plugin>
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
 				</plugin>
 				<plugin>
 					<groupId>com.github.spotbugs</groupId>

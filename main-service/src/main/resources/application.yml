@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:postgres://ewm-db:5432/postgres
+    driver-class-name: org.postgresql.Driver
+    username: user
+    password: pass
+
+ru.practicum.stats-client:
+  server url: stats-server
+  host: 9090
