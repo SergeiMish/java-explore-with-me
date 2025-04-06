@@ -17,7 +17,7 @@
     <dependencies>
         <dependency>
             <groupId>ru.practicum</groupId>
-            <artifactId>dto</artifactId>
+            <artifactId>stats-model</artifactId>
             <version>${project.version}</version>
         </dependency>
 

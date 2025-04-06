@@ -1,2 +1,9 @@
-server:
-  port: 9090
+spring:
+  datasource:
+    url: jdbc:postgresql://stats-db:5432/stats_db  # Важно: stats-db (имя контейнера!)
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
