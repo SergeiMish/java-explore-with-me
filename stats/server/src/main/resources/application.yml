@@ -4,9 +4,12 @@ spring:
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 30000
+      initialization-fail-timeout: 0
   jpa:
     hibernate:
-      ddl-auto: update  # Или validate, если таблицы созданы вручную
+      ddl-auto: none
   sql:
     init:
       mode: always

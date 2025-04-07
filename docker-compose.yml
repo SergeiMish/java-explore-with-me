@@ -30,6 +30,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      WAIT_FOR_DB: "true"
 
   stats-client:
     image: stats-client
