@@ -11,8 +11,11 @@ services:
         POSTGRES_DB: stats_db
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
+        SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats_db
     ports:
         - "5432:5432"
+
+
 
 
   ewm-service:

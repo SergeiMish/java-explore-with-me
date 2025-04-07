@@ -2,12 +2,13 @@ package ru.practicum.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "hit")
+@Table(name = "hits")
 @Builder
 @Getter
 @Setter
@@ -29,6 +30,6 @@ public class Hit {
     private String ip;
 
     @Column(name = "timestamp", nullable = false)
-    private Instant timestamp;
+    private LocalDateTime timestamp;
 
 }

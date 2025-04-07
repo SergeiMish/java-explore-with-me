@@ -11,6 +11,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <properties>
+        <maven.compiler.release>21</maven.compiler.release>
+    </properties>
+
     <artifactId>stats-client</artifactId>
     <packaging>jar</packaging>
 
