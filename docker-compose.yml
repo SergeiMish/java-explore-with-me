@@ -41,8 +41,8 @@ services:
         condition: service_healthy
     environment:
       WAIT_HOSTS: stats-server:9090
-      WAIT_HOSTS_TIMEOUT: 300  # Увеличено до 5 минут
-      WAIT_SLEEP_INTERVAL: 10  # Интервал проверки
+      WAIT_HOSTS_TIMEOUT: 300
+      WAIT_SLEEP_INTERVAL: 10
 
   ewm-db:
     image: postgres:16.1
