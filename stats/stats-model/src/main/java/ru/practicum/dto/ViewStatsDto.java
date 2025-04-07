@@ -1,8 +1,9 @@
 package ru.practicum.dto;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.hibernate.validator.constraints.NotBlank;
+
 
 @Builder
 @Getter

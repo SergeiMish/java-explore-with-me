@@ -29,5 +29,4 @@ public class Hit {
 
     @Column(name = "timestamp", nullable = false)
     private LocalDateTime timestamp;
-
 }
