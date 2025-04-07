@@ -2,17 +2,14 @@ package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.EndpointHitDto;
-import ru.practicum.dto.HitDto;
 import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.exeption.DataRetrievalException;
 import ru.practicum.exeption.NotFoundException;
 import ru.practicum.exeption.ValidationException;
 import ru.practicum.mapper.StatsMapper;
-import ru.practicum.repository.HitRepository;
-import ru.practicum.mapper.HitDtoMapper;
 import ru.practicum.model.Hit;
+import ru.practicum.repository.HitRepository;
 import ru.practicum.repository.ViewStatsProjection;
 
 import java.time.LocalDateTime;

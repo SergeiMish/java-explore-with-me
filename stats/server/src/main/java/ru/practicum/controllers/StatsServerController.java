@@ -4,11 +4,8 @@ package ru.practicum.controllers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import ru.practicum.dto.EndpointHitDto;
-import ru.practicum.dto.HitDto;
 import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.mapper.StatsMapper;
 import ru.practicum.service.StatsService;

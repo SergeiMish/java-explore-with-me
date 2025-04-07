@@ -12,7 +12,6 @@ public interface StatsMapper {
     Hit toHit(EndpointHitDto dto);
 
 
-
     @Mapping(target = "app", source = "app")
     @Mapping(target = "uri", source = "uri")
     @Mapping(target = "hits", source = "hits")
