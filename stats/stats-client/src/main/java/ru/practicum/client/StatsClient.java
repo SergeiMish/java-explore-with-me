@@ -63,7 +63,8 @@ public class StatsClient {
                     url,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<>() {}
+                    new ParameterizedTypeReference<>() {
+                    }
             );
 
             if (!response.getStatusCode().is2xxSuccessful()) {
