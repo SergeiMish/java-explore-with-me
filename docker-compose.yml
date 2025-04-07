@@ -1,34 +1,35 @@
-services:
-  stats-server:
-    image: stats-server
-    build: ./stats/server
-    ports:
-      - "9090:9090"
-    environment:
-          WAIT_HOSTS: stats-server:9090
-          WAIT_HOSTS_TIMEOUT: 120
+version: '3.8'
 
+services:
   stats-db:
     image: postgres:16.1
     environment:
       POSTGRES_DB: stats_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  stats-server:
+    image: stats-server
+    build: ./stats/server
+    ports:
+      - "9090:9090"
+    depends_on:
+      stats-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats_db
-    ports:
-      - "5432:5432"
-
-
-
-
-  ewm-service:
-    image: ewm-service
-    build: ./main-service
-    ports:
-      - "8080:8080"
-
-  ewm-db:
-    image: postgres:16.1
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
 
   stats-client:
     image: stats-client
@@ -36,4 +37,34 @@ services:
     ports:
       - "9091:9091"
     depends_on:
-      - stats-server
+      stats-server:
+        condition: service_healthy
+    environment:
+      WAIT_HOSTS: stats-server:9090
+      WAIT_HOSTS_TIMEOUT: 300  # Увеличено до 5 минут
+      WAIT_SLEEP_INTERVAL: 10  # Интервал проверки
+
+  ewm-db:
+    image: postgres:16.1
+    environment:
+      POSTGRES_DB: ewm_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ewm-service:
+    image: ewm-service
+    build: ./main-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      ewm-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ewm-db:5432/ewm_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
