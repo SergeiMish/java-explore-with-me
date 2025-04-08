@@ -1,14 +1,72 @@
-services:
-  stats-server:
-    ports:
-      - "9090:9090"
+version: '3.8'
 
+services:
   stats-db:
     image: postgres:16.1
+    environment:
+      POSTGRES_DB: stats_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
-  ewm-service:
+  stats-server:
+    image: stats-server
+    build: ./stats/server
     ports:
-      - "8080:8080"
+      - "9090:9090"
+    depends_on:
+      stats-db:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:9090/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 40s
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 2
+
+
+  stats-client:
+    image: stats-client
+    build: ./stats/stats-client
+    ports:
+      - "9091:9091"
+    depends_on:
+      stats-server:
+        condition: service_healthy
+    environment:
+      WAIT_HOSTS: stats-server:9090
+      WAIT_HOSTS_TIMEOUT: 300
 
   ewm-db:
     image: postgres:16.1
+    environment:
+      POSTGRES_DB: ewm_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ewm-service:
+    image: ewm-service
+    build: ./main-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      ewm-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ewm-db:5432/ewm_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
