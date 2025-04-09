@@ -24,4 +24,7 @@ public class User {
     String name;
     @OneToMany(mappedBy = "initiator")
     private List<Event> organizedEvents = new ArrayList<>();
+
+    @OneToMany(mappedBy = "requester")
+    private List<ParticipationRequest> requests;
 }

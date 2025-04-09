@@ -2,6 +2,8 @@ package ru.practicum.dto;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Builder
 @Getter
 @Setter
@@ -9,9 +11,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ParticipationRequestDto {
-    private String created;
-    private Long event;
     private Long id;
+    private Long event;
     private Long requester;
     private String status;
+    private LocalDateTime created;
 }

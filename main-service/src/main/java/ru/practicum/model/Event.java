@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "events")
@@ -46,4 +48,10 @@ public class Event {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User initiator;
+
+    @OneToMany(mappedBy = "event")
+    private List<ParticipationRequest> requests;
+
+    @ManyToMany(mappedBy = "events")
+    private Set<Compilation> compilations;
 }
