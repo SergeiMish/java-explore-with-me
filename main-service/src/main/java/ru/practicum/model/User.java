@@ -1,6 +1,9 @@
 package ru.practicum.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -17,12 +20,16 @@ import java.util.List;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
+    @NotBlank
+    @Size(min = 6, max = 254)
+    @Email
+    private String email;
     @Column(nullable = false)
-    String email;
-    @Column(nullable = false)
-    String name;
+    private String name;
+
     @OneToMany(mappedBy = "initiator")
+    @Builder.Default
     private List<Event> organizedEvents = new ArrayList<>();
 
     @OneToMany(mappedBy = "requester")

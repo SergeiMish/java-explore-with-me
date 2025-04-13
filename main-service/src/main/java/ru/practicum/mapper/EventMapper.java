@@ -2,17 +2,23 @@ package ru.practicum.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import ru.practicum.dto.EventFullDto;
-import ru.practicum.dto.EventShortDto;
-import ru.practicum.dto.NewEventDto;
+import org.mapstruct.MappingTarget;
+import ru.practicum.model.enums.EventState;
+import ru.practicum.model.enums.RequestStatus;
+import ru.practicum.service.dto.event.EventFullDto;
+import ru.practicum.service.dto.event.EventShortDto;
+import ru.practicum.service.dto.event.NewEventDto;
+import ru.practicum.service.dto.event.UpdateEventAdminRequest;
 import ru.practicum.model.Event;
 
-@Mapper(componentModel = "spring")
+import java.time.LocalDateTime;
+
+@Mapper(componentModel = "spring",
+        uses = {CategoryMapper.class, UserMapper.class})
 public interface EventMapper {
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "category", ignore = true)
-    @Mapping(target = "createdOn", expression = "java(LocalDateTime.now())")
-    @Mapping(target = "state", constant = "PENDING")
+
     @Mapping(target = "eventDate", source = "eventDate", dateFormat = "yyyy-MM-dd HH:mm:ss")
-    Event toEvent(NewEventDto dto);
+    @Mapping(target = "confirmedRequests", defaultValue = "0")
+    @Mapping(target = "paid", defaultValue = "false")
+    EventShortDto toShortDto(Event event);
 }

@@ -23,6 +23,7 @@ public class Compilation {
     private Long id;
 
     @ManyToMany
+    @Builder.Default
     @JoinTable(
             name = "compilation_events",
             joinColumns = @JoinColumn(name = "compilation_id"),
@@ -31,7 +32,7 @@ public class Compilation {
     private Set<Event> events = new HashSet<>();
 
     @Column(nullable = false)
-    private Boolean pinned;
+    private Boolean pinned = false;
 
     @NotBlank
     @Size(min = 1, max = 50)

@@ -5,13 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.model.enums.RequestStatus;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "participation_requests")
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ParticipationRequest {
@@ -20,21 +20,13 @@ public class ParticipationRequest {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", nullable = false)
     private Event event;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "requester_id", nullable = false)
     private User requester;
 
-    @Column(nullable = false)
+    private LocalDateTime created = LocalDateTime.now();
+
     @Enumerated(EnumType.STRING)
-    private ParticipationRequestStatus status;
-
-    @Column(nullable = false)
-    private LocalDateTime created;
-
-    public enum ParticipationRequestStatus {
-        PENDING, CONFIRMED, REJECTED, CANCELED
-    }
+    private RequestStatus status;
 }
