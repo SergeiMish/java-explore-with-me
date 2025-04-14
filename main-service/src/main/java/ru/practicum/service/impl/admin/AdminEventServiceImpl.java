@@ -12,7 +12,7 @@ import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Category;
 import ru.practicum.model.Event;
 import ru.practicum.model.enums.EventState;
-import ru.practicum.model.enums.ParticipationRequestStatus;
+import ru.practicum.model.enums.RequestStatus;
 import ru.practicum.model.enums.StateActionAdmin;
 import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
@@ -22,7 +22,6 @@ import ru.practicum.service.dto.request.UpdateEventAdminRequest;
 import ru.practicum.service.interfaces.admin.AdminEventService;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +35,7 @@ public class AdminEventServiceImpl implements AdminEventService {
     private final ParticipationRequestRepository requestRepository;
 
     @Transactional(readOnly = true)
+    @Override
     public List<EventFullDto> searchEvents(
             List<Long> users,
             List<EventState> states,
@@ -80,6 +80,7 @@ public class AdminEventServiceImpl implements AdminEventService {
     }
 
     @Transactional
+    @Override
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateRequest) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
@@ -159,6 +160,6 @@ public class AdminEventServiceImpl implements AdminEventService {
     }
 
     private Long getConfirmedRequests(Long eventId) {
-        return requestRepository.countByEventIdAndStatus(eventId, ParticipationRequestStatus.CONFIRMED);
+        return requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
     }
 }

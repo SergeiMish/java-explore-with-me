@@ -5,6 +5,8 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 import ru.practicum.model.Location;
 
+import java.time.LocalDateTime;
+
 @Builder
 @Getter
 @Setter
@@ -26,7 +28,7 @@ public class NewEventDto {
 
     @NotBlank
     @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")
-    private String eventDate;
+    private LocalDateTime eventDate;
 
     @NotNull
     @Valid

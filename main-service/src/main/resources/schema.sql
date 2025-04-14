@@ -23,6 +23,9 @@ CREATE TABLE events (
                         title VARCHAR(120) NOT NULL,
                         category_id BIGINT NOT NULL,
                         user_id BIGINT NOT NULL,
+                        state VARCHAR(20) DEFAULT 'PENDING',
+                        created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        published_on TIMESTAMP,
                         FOREIGN KEY (category_id) REFERENCES categories(id),
                         FOREIGN KEY (user_id) REFERENCES users(id)
 );

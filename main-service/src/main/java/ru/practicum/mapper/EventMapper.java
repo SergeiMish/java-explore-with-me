@@ -39,7 +39,6 @@ public interface EventMapper {
     // NewEventDto -> Event
     @Mapping(target = "eventDate", source = "eventDate", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "state", constant = "PENDING")
-    @Mapping(target = "createdOn", expression = "java(LocalDateTime.now())")
     @Mapping(target = "publishedOn", ignore = true)
     @Mapping(target = "requests", ignore = true)
     @Mapping(target = "compilations", ignore = true)
