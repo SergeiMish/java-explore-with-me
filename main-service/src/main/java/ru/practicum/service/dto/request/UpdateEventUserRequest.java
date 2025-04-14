@@ -1,14 +1,11 @@
-package ru.practicum.service.dto.event;
+package ru.practicum.service.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.sql.ast.tree.expression.Star;
 import ru.practicum.model.Location;
 import ru.practicum.model.enums.StateAction;
 

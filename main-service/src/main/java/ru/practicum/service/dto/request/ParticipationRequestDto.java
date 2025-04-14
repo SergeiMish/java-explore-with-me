@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.*;
+import ru.practicum.model.enums.ParticipationRequestStatus;
 
 import java.time.LocalDateTime;
 
@@ -21,10 +22,6 @@ public class ParticipationRequestDto {
     private Long id;
     private Long requester;
 
-    @Enumerated(EnumType.STRING)
     private ParticipationRequestStatus status;
 
-    public enum ParticipationRequestStatus {
-        PENDING, CONFIRMED, REJECTED, CANCELED
-    }
 }

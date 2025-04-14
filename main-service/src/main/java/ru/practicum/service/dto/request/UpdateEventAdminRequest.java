@@ -1,13 +1,10 @@
-package ru.practicum.service.dto.event;
+package ru.practicum.service.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import ru.practicum.model.Location;
-import ru.practicum.model.enums.StateAction;
 import ru.practicum.model.enums.StateActionAdmin;
 
 import java.time.LocalDateTime;

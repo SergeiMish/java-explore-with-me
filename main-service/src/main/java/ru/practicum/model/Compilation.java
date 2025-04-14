@@ -32,6 +32,7 @@ public class Compilation {
     private Set<Event> events = new HashSet<>();
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean pinned = false;
 
     @NotBlank

@@ -12,11 +12,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", uses = EventMapper.class)
+@Mapper(componentModel = "spring",
+        uses = EventMapper.class)
 public interface CompilationMapper {
 
     @Mapping(target = "events", source = "events")
     CompilationDto toDto(Compilation compilation);
-    Compilation toCompilation(NewCompilationDto dto);
 
+    @Mapping(target = "events", ignore = true) // Обрабатывается отдельно в сервисе
+    Compilation toCompilation(NewCompilationDto dto);
 }

@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.model.enums.ParticipationRequestStatus;
 import ru.practicum.model.enums.RequestStatus;
+import ru.practicum.service.dto.request.ParticipationRequestDto;
 
 import java.time.LocalDateTime;
 
@@ -27,6 +29,5 @@ public class ParticipationRequest {
 
     private LocalDateTime created = LocalDateTime.now();
 
-    @Enumerated(EnumType.STRING)
-    private RequestStatus status;
+    private ParticipationRequestStatus status;
 }

@@ -19,6 +19,7 @@ public class CompilationDto {
     private Long id;
 
     @NotNull
+    @Builder.Default
     private Boolean pinned = false;
 
     @NotBlank
@@ -26,5 +27,6 @@ public class CompilationDto {
     private String title;
 
     @NotNull
+    @Builder.Default
     private List<EventShortDto> events = new ArrayList<>();
 }

@@ -1,46 +1,66 @@
 package ru.practicum.controllers.admin;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.model.enums.EventState;
 import ru.practicum.service.dto.event.EventFullDto;
-import ru.practicum.service.dto.event.UpdateEventAdminRequest;
+import ru.practicum.service.dto.request.UpdateEventAdminRequest;
 import ru.practicum.service.interfaces.admin.AdminEventService;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
-//@RestController
-//@RequestMapping("/admin/events")
-//@RequiredArgsConstructor
-//public class AdminEventController {
-//
-//    private final AdminEventService adminEventService;
-//
-//    @GetMapping
-//    public ResponseEntity<List<EventFullDto>> searchEvents(
-//            @RequestParam(required = false) List<Long> users,
-//            @RequestParam(required = false) List<String> states,
-//            @RequestParam(required = false) List<Long> categories,
-//            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
-//            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
-//            @RequestParam(defaultValue = "0") int from,
-//            @RequestParam(defaultValue = "10") int size) {
-//
-//        List<EventFullDto> events = adminEventService.searchEvents(
-//                users, states, categories, rangeStart, rangeEnd, from, size);
-//
-//        return ResponseEntity.ok(events);
-//    }
-//
-//    @PatchMapping("/{eventId}")
-//    public ResponseEntity<EventFullDto> updateEvent(
-//            @PathVariable Long eventId,
-//            @Valid @RequestBody UpdateEventAdminRequest updateRequest) {
-//
-//        EventFullDto updatedEvent = adminEventService.updateEvent(eventId, updateRequest);
-//        return ResponseEntity.ok(updatedEvent);
-//    }
-//}
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/admin/events")
+public class AdminEventController {
+
+    private final AdminEventService adminEventService;
+
+    @GetMapping
+    public List<EventFullDto> searchEvents(
+            @RequestParam(required = false) List<Long> users,
+            @RequestParam(required = false) List<String> states,
+            @RequestParam(required = false) List<Long> categories,
+            @RequestParam(required = false) String rangeStart,
+            @RequestParam(required = false) String rangeEnd,
+            @RequestParam(defaultValue = "0") @Min(0) Integer from,
+            @RequestParam(defaultValue = "10") @Positive Integer size) {
+
+        return adminEventService.searchEvents(
+                users,
+                parseStates(states),
+                categories,
+                parseDateTime(rangeStart),
+                parseDateTime(rangeEnd),
+                from,
+                size
+        );
+    }
+
+    @PatchMapping("/{eventId}")
+    public EventFullDto updateEvent(
+            @PathVariable Long eventId,
+            @Valid @RequestBody UpdateEventAdminRequest updateRequest) {
+
+        return adminEventService.updateEvent(eventId, updateRequest);
+    }
+
+    private List<EventState> parseStates(List<String> states) {
+        if (states == null) return null;
+        return states.stream()
+                .map(EventState::valueOf)
+                .collect(Collectors.toList());
+    }
+
+    private LocalDateTime parseDateTime(String dateTime) {
+        return dateTime != null ?
+                LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) :
+                null;
+    }
+}

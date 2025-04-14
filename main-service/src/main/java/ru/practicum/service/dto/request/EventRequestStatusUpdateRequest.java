@@ -2,6 +2,7 @@ package ru.practicum.service.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
+import ru.practicum.model.enums.RequestStatus;
 
 import java.util.List;
 
@@ -16,7 +17,4 @@ public class EventRequestStatusUpdateRequest {
     private List<Long> requestIds;
     private RequestStatus status;
 
-    public enum RequestStatus {
-        CONFIRMED, REJECTED
-    }
 }

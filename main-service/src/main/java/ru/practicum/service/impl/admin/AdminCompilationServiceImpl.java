@@ -44,7 +44,7 @@ public class AdminCompilationServiceImpl implements AdminCompilationService {
         }
 
         Compilation saved = compilationRepository.save(compilation);
-        return compilationMapper.toDto(saved); // Маппим в DTO для ответа
+        return compilationMapper.toDto(saved);
     }
 
     @Override
@@ -62,7 +62,6 @@ public class AdminCompilationServiceImpl implements AdminCompilationService {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException("Подборка не найдена"));
 
-        // Обновляем поля
         if (updateRequest.getTitle() != null) {
             compilation.setTitle(updateRequest.getTitle());
         }

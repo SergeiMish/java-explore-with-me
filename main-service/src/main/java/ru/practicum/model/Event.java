@@ -63,7 +63,6 @@ public class Event {
     @JoinColumn(name = "user_id", nullable = false)
     private User initiator;
 
-    @Enumerated(EnumType.STRING)
     @Builder.Default
     private EventState state = EventState.PENDING;
 
