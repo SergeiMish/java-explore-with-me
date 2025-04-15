@@ -8,8 +8,6 @@ import ru.practicum.service.dto.category.CategoryDto;
 import ru.practicum.service.dto.category.NewCategoryDto;
 import ru.practicum.service.interfaces.admin.AdminCategoryService;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin/categories")

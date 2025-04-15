@@ -14,6 +14,7 @@ import ru.practicum.service.interfaces.admin.AdminCompilationService;
 @RequiredArgsConstructor
 public class AdminCompilationController {
     private final AdminCompilationService adminCompilationService;
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CompilationDto createCompilation(@Valid @RequestBody NewCompilationDto newCompilationDto) {

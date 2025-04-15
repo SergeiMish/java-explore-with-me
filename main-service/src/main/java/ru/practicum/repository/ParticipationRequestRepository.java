@@ -8,6 +8,7 @@ import ru.practicum.model.enums.RequestStatus;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface ParticipationRequestRepository extends JpaRepository<ParticipationRequest, Long> {
 
@@ -23,7 +24,12 @@ public interface ParticipationRequestRepository extends JpaRepository<Participat
             "WHERE pr.event.id = :eventId AND pr.status = ru.practicum.model.enums.RequestStatus.PENDING")
     List<ParticipationRequest> findPendingRequests(@Param("eventId") Long eventId);
 
-    // Правильный вариант для Long ID
     @Query("SELECT pr FROM ParticipationRequest pr WHERE pr.id IN :requestIds")
     List<ParticipationRequest> findAllById(@Param("requestIds") Collection<Long> requestIds);
+
+    List<ParticipationRequest> findAllByRequesterId(Long requesterId);
+
+    boolean existsByEventIdAndRequesterId(Long eventId, Long requesterId);
+
+    Optional<ParticipationRequest> findByIdAndRequesterId(Long id, Long requesterId);
 }

@@ -1,7 +1,12 @@
 package ru.practicum.service.interfaces.unauthenticated;
 
+import ru.practicum.service.dto.category.CategoryDto;
+
+import java.util.List;
+
 public interface PublicCategoryService {
-//    getCategories() List<CategoryDto> getCategories(int from, int size);
-//
-//    getCategoryById()
+
+    List<CategoryDto> getCategories(Integer from, Integer size);
+
+    CategoryDto getCategoryById(Long catId);
 }

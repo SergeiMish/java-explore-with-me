@@ -2,7 +2,9 @@ package ru.practicum.service.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import ru.practicum.model.Location;
 import ru.practicum.model.enums.StateActionAdmin;

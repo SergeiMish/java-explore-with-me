@@ -2,7 +2,6 @@ package ru.practicum.service.impl.admin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.exeption.ConflictException;
@@ -14,9 +13,6 @@ import ru.practicum.repository.EventRepository;
 import ru.practicum.service.dto.category.CategoryDto;
 import ru.practicum.service.dto.category.NewCategoryDto;
 import ru.practicum.service.interfaces.admin.AdminCategoryService;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

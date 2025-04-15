@@ -4,9 +4,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import ru.practicum.model.Category;
+import ru.practicum.model.Event;
 import ru.practicum.service.dto.event.EventFullDto;
 import ru.practicum.service.dto.event.EventShortDto;
-import ru.practicum.model.Event;
 import ru.practicum.service.dto.event.NewEventDto;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE,

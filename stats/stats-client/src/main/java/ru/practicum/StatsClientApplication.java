@@ -10,6 +10,7 @@ public class StatsClientApplication {
     public static void main(String[] args) {
         SpringApplication.run(StatsClientApplication.class, args);
     }
+
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();

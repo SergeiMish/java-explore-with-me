@@ -11,14 +11,14 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface ParticipationRequestMapper {
 
-  @Mapping(target = "requester", expression = "java(request.getRequester().getId())")
-  @Mapping(target = "event", expression = "java(request.getEvent().getId())")
-  ParticipationRequestDto toDto(ParticipationRequest request);
+    @Mapping(target = "requester", expression = "java(request.getRequester().getId())")
+    @Mapping(target = "event", expression = "java(request.getEvent().getId())")
+    ParticipationRequestDto toDto(ParticipationRequest request);
 
-  default List<ParticipationRequestDto> toDtoList(List<ParticipationRequest> requests) {
-    return requests.stream()
-            .map(this::toDto)
-            .collect(Collectors.toList());
-  }
+    default List<ParticipationRequestDto> toDtoList(List<ParticipationRequest> requests) {
+        return requests.stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
 }
 

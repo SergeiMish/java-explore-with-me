@@ -25,6 +25,7 @@ import ru.practicum.service.dto.request.EventRequestStatusUpdateRequest;
 import ru.practicum.service.dto.request.EventRequestStatusUpdateResult;
 import ru.practicum.service.dto.request.ParticipationRequestDto;
 import ru.practicum.service.dto.request.UpdateEventUserRequest;
+import ru.practicum.service.interfaces.authenticated.UserEventService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class UserEventServiceImpl {
+public class UserEventServiceImpl implements UserEventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
@@ -42,6 +43,7 @@ public class UserEventServiceImpl {
     private final ParticipationRequestMapper participationRequestMapper;
 
     @Transactional(readOnly = true)
+    @Override
     public List<EventShortDto> getUserEvents(Long userId, Integer from, Integer size) {
         List<Event> events = eventRepository.findByInitiatorId(userId);
         return events.stream()
@@ -52,6 +54,7 @@ public class UserEventServiceImpl {
     }
 
     @Transactional
+    @Override
     public EventFullDto createEvent(Long userId, NewEventDto newEventDto) {
         User initiator = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
@@ -73,6 +76,7 @@ public class UserEventServiceImpl {
     }
 
     @Transactional(readOnly = true)
+    @Override
     public EventFullDto getUserEvent(Long userId, Long eventId) {
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
@@ -80,6 +84,7 @@ public class UserEventServiceImpl {
     }
 
     @Transactional
+    @Override
     public EventFullDto updateUserEvent(Long userId, Long eventId, UpdateEventUserRequest updateRequest) {
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
@@ -99,6 +104,7 @@ public class UserEventServiceImpl {
     }
 
     @Transactional(readOnly = true)
+    @Override
     public List<ParticipationRequestDto> getEventRequests(Long userId, Long eventId) {
         if (!eventRepository.existsByIdAndInitiatorId(eventId, userId)) {
             throw new NotFoundException("Event not found");
@@ -109,6 +115,7 @@ public class UserEventServiceImpl {
     }
 
     @Transactional
+    @Override
     public EventRequestStatusUpdateResult updateRequestStatus(
             Long userId, Long eventId, EventRequestStatusUpdateRequest updateRequest) {
 
