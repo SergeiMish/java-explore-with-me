@@ -27,6 +27,7 @@ public class Event {
 
     @NotBlank
     @Size(min = 20, max = 2000)
+    @Column(columnDefinition = "TEXT")
     private String annotation;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -65,7 +66,6 @@ public class Event {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "state", length = 20)
-    @Builder.Default
     private EventState state = EventState.PENDING;
 
     @Column(name = "created_on")

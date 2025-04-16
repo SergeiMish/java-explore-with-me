@@ -20,13 +20,11 @@ public interface EventMapper {
         return category;
     }
 
-    // Event -> EventShortDto
     @Mapping(target = "eventDate", source = "eventDate", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "confirmedRequests", ignore = true)
     @Mapping(target = "paid", defaultValue = "false")
     EventShortDto toShortDto(Event event);
 
-    // Event -> EventFullDto
     @Mapping(target = "eventDate", source = "eventDate", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "createdOn", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "publishedOn", dateFormat = "yyyy-MM-dd HH:mm:ss")
@@ -34,9 +32,9 @@ public interface EventMapper {
     @Mapping(target = "paid", defaultValue = "false")
     @Mapping(target = "requestModeration", defaultValue = "true")
     @Mapping(target = "views", defaultValue = "0L")
+    @Mapping(target = "state", expression = "java(event.getState().name())")
     EventFullDto toFullDto(Event event);
 
-    // NewEventDto -> Event
     @Mapping(target = "eventDate", source = "eventDate", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "state", constant = "PENDING")
     @Mapping(target = "publishedOn", ignore = true)

@@ -1,13 +1,15 @@
 package ru.practicum.service.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import ru.practicum.model.Location;
-import ru.practicum.model.enums.StateActionAdmin;
+import ru.practicum.model.enums.StateAction;
 
 import java.time.LocalDateTime;
 
@@ -40,7 +42,8 @@ public class UpdateEventAdminRequest {
 
     private Boolean requestModeration;
 
-    private StateActionAdmin stateActionAdmin;
+    @Enumerated(EnumType.STRING)
+    private StateAction stateAction;
 
     @Size(min = 3, max = 120)
     private String title;

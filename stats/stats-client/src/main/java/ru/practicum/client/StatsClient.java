@@ -1,5 +1,9 @@
 package ru.practicum.client;
 
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -15,15 +19,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class StatsClient {
+    @Value("${stats.server.url}")
+    private String serverUrl;
     private final RestTemplate restTemplate;
-    private final String serverUrl;
-
-    public StatsClient(@Value("${stats-server.url}") String serverUrl,
-                       RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-        this.serverUrl = serverUrl;
-    }
 
     public void saveHit(EndpointHitDto endpointHitDto) {
         String url = serverUrl + "/hit";

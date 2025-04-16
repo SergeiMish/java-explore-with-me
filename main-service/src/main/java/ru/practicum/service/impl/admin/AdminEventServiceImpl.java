@@ -1,6 +1,7 @@
 package ru.practicum.service.impl.admin;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -13,7 +14,7 @@ import ru.practicum.model.Category;
 import ru.practicum.model.Event;
 import ru.practicum.model.enums.EventState;
 import ru.practicum.model.enums.RequestStatus;
-import ru.practicum.model.enums.StateActionAdmin;
+import ru.practicum.model.enums.StateAction;
 import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.ParticipationRequestRepository;
@@ -25,8 +26,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AdminEventServiceImpl implements AdminEventService {
 
     private final EventRepository eventRepository;
@@ -79,27 +82,27 @@ public class AdminEventServiceImpl implements AdminEventService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    @Override
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateRequest) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Event not found"));
 
-        if (updateRequest.getStateActionAdmin() != null) {
-            validateStateAction(event, updateRequest.getStateActionAdmin());
+        if (updateRequest.getStateAction() != null) {
+            validateStateAction(event, updateRequest.getStateAction());
+            event = eventRepository.saveAndFlush(event);
         }
 
         updateEventFields(event, updateRequest);
-
         Event updatedEvent = eventRepository.save(event);
-        EventFullDto dto = eventMapper.toFullDto(updatedEvent);
-        dto.setConfirmedRequests(getConfirmedRequests(eventId));
 
-        return dto;
+        // Логирование для отладки
+        log.info("Updated event state: {}", updatedEvent.getState());
+
+        return eventMapper.toFullDto(updatedEvent);
     }
 
-    private void validateStateAction(Event event, StateActionAdmin stateActionAdmin) {
-        if (stateActionAdmin == StateActionAdmin.PUBLISH_EVENT) {
+
+    private void validateStateAction(Event event, StateAction stateAction) {
+        if (stateAction == StateAction.PUBLISH_EVENT) {
             if (event.getState() != EventState.PENDING) {
                 throw new ConflictException("Cannot publish the event because it's not in the right state: " + event.getState());
             }
@@ -108,9 +111,9 @@ public class AdminEventServiceImpl implements AdminEventService {
             }
             event.setState(EventState.PUBLISHED);
             event.setPublishedOn(LocalDateTime.now());
-        } else if (stateActionAdmin == StateActionAdmin.REJECT_EVENT) {
-            if (event.getState() == EventState.PUBLISHED) {
-                throw new ConflictException("Cannot reject the event because it's already published");
+        } else if (stateAction == StateAction.REJECT_EVENT) {
+            if (event.getState() != EventState.PENDING) {
+                throw new ConflictException("Cannot reject the event because it's not pending");
             }
             event.setState(EventState.CANCELED);
         }

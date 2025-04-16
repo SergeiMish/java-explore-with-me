@@ -70,6 +70,7 @@ public class UserEventServiceImpl implements UserEventService {
         event.setInitiator(initiator);
         event.setCategory(category);
         event.setState(EventState.PENDING);
+        event.setPublishedOn(null);
 
         Event savedEvent = eventRepository.save(event);
         return eventMapper.toFullDto(savedEvent);
@@ -80,6 +81,9 @@ public class UserEventServiceImpl implements UserEventService {
     public EventFullDto getUserEvent(Long userId, Long eventId) {
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new NotFoundException("Event not published");
+        }
         return eventMapper.toFullDto(event);
     }
 
@@ -90,7 +94,7 @@ public class UserEventServiceImpl implements UserEventService {
                 .orElseThrow(() -> new NotFoundException("Event not found"));
 
         if (event.getState() == EventState.PUBLISHED) {
-            throw new ConflictException("Only pending or canceled events can be changed");
+            throw new ConflictException("Cannot modify published event");
         }
 
         if (updateRequest.getEventDate() != null &&
@@ -99,6 +103,7 @@ public class UserEventServiceImpl implements UserEventService {
         }
 
         updateEventFields(event, updateRequest);
+
         Event updatedEvent = eventRepository.save(event);
         return eventMapper.toFullDto(updatedEvent);
     }
@@ -188,10 +193,18 @@ public class UserEventServiceImpl implements UserEventService {
         if (updateRequest.getTitle() != null) {
             event.setTitle(updateRequest.getTitle());
         }
-        if (updateRequest.getStateAction() == StateAction.SEND_TO_REVIEW) {
-            event.setState(EventState.PENDING);
-        } else if (updateRequest.getStateAction() == StateAction.CANCEL_REVIEW) {
-            event.setState(EventState.CANCELED);
+        if (updateRequest.getStateAction() != null) {
+            if (updateRequest.getStateAction() == StateAction.SEND_TO_REVIEW) {
+                if (event.getState() != EventState.CANCELED) {
+                    throw new ConflictException("Only canceled events can be sent to review");
+                }
+                event.setState(EventState.PENDING);
+            } else if (updateRequest.getStateAction() == StateAction.CANCEL_REVIEW) {
+                if (event.getState() != EventState.PENDING) {
+                    throw new ConflictException("Only pending events can be canceled");
+                }
+                event.setState(EventState.CANCELED);
+            }
         }
     }
 

@@ -2,7 +2,12 @@ package ru.practicum.service.impl.unauthenticated;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import ru.practicum.client.StatsClient;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.exeption.ConflictException;
@@ -16,9 +21,9 @@ import ru.practicum.service.dto.event.EventShortDto;
 import ru.practicum.service.interfaces.unauthenticated.PublicEventService;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -41,32 +46,76 @@ public class PublicEventServiceImpl implements PublicEventService {
             Integer size,
             HttpServletRequest request) {
 
+        // Валидация дат
         if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
-            throw new ConflictException("Start date must be before end date");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Start date must be before end date"
+            );
         }
 
-        List<Event> events = eventRepository.findPublicEvents(
-                text != null ? text.toLowerCase() : null,
-                categories,
-                paid,
-                rangeStart != null ? rangeStart : LocalDateTime.now(),
-                rangeEnd,
-                onlyAvailable);
+        // Установка дефолтных значений
+        LocalDateTime start = rangeStart != null ? rangeStart : LocalDateTime.now();
+        LocalDateTime end = rangeEnd;
 
-        if ("EVENT_DATE".equals(sort)) {
-            events.sort(Comparator.comparing(Event::getEventDate));
-        } else if ("VIEWS".equals(sort)) {
-            events.sort(Comparator.comparing(Event::getViews));
+        // Построение спецификации
+        Specification<Event> spec = Specification.where(
+                (root, query, cb) -> cb.equal(root.get("state"), EventState.PUBLISHED)
+        );
+
+        // Текстовый поиск (если передан)
+        if (text != null && !text.isBlank()) {
+            String searchText = "%" + text.toLowerCase() + "%";
+            spec = spec.and((root, query, cb) -> cb.or(
+                    cb.like(cb.lower(root.get("annotation")), searchText),
+                    cb.like(cb.lower(root.get("description")), searchText)
+            ));
         }
 
-        List<Event> paginatedEvents = events.stream()
-                .skip(from)
-                .limit(size)
-                .collect(Collectors.toList());
+        // Фильтр по категориям (если передан)
+        if (categories != null && !categories.isEmpty()) {
+            spec = spec.and((root, query, cb) -> root.get("category").get("id").in(categories));
+        }
 
+        // Фильтр по платности (если передан)
+        if (paid != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("paid"), paid));
+        }
+
+        // Фильтр по дате начала
+        spec = spec.and((root, query, cb) -> cb.greaterThan(root.get("eventDate"), start));
+
+        // Фильтр по дате окончания (если передан)
+        if (end != null) {
+            spec = spec.and((root, query, cb) -> cb.lessThan(root.get("eventDate"), end));
+        }
+
+        // Фильтр по доступности (если включен)
+        if (Boolean.TRUE.equals(onlyAvailable)) {
+            spec = spec.and((root, query, cb) -> cb.or(
+                    cb.equal(root.get("participantLimit"), 0),
+                    cb.greaterThan(root.get("participantLimit"), root.get("confirmedRequests"))
+            ));
+        }
+
+        // Создание pageable для пагинации
+        Pageable pageable = PageRequest.of(from / size, size);
+
+        // Получение событий
+        List<Event> events = eventRepository.findAll(spec, pageable).getContent();
+
+        // Сортировка
+        if ("VIEWS".equals(sort)) {
+            events.sort((e1, e2) -> e2.getViews().compareTo(e1.getViews()));
+        } else {
+            // Сортировка по дате по умолчанию
+            events.sort((e1, e2) -> e1.getEventDate().compareTo(e2.getEventDate()));
+        }
+
+        // Сохранение статистики
         saveEndpointHit(request);
 
-        return paginatedEvents.stream()
+        return events.stream()
                 .map(eventMapper::toShortDto)
                 .collect(Collectors.toList());
     }
@@ -74,8 +123,12 @@ public class PublicEventServiceImpl implements PublicEventService {
     @Override
     public EventFullDto getPublicEventById(Long id, HttpServletRequest request) {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
-                .orElseThrow(() -> new NotFoundException("Event not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Event with id=" + id + " was not found"
+                ));
 
+        // Сохранение статистики
         saveEndpointHit(request);
 
         return eventMapper.toFullDto(event);

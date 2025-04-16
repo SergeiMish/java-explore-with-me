@@ -1,8 +1,10 @@
 package ru.practicum.service.dto.event;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import ru.practicum.model.Location;
 
 import java.time.LocalDateTime;
@@ -26,8 +28,10 @@ public class NewEventDto {
     @Size(min = 20, max = 7000)
     private String description;
 
-    @NotBlank
-    @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")
+    @NotNull
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Future
     private LocalDateTime eventDate;
 
     @NotNull
