@@ -1,6 +1,7 @@
 package ru.practicum.service.impl.admin;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.exeption.ConflictException;
@@ -27,9 +28,9 @@ public class AdminUserServiceImpl implements AdminUserService {
         List<User> users;
 
         if (ids == null || ids.isEmpty()) {
-            users = userRepository.findAll();
+            users = userRepository.findAll(Sort.by(Sort.Direction.ASC, "id")); // Сортировка по возрастанию
         } else {
-            users = userRepository.findAllById(ids);
+            users = userRepository.findAllByIdIn(ids);
         }
 
         return users.stream()

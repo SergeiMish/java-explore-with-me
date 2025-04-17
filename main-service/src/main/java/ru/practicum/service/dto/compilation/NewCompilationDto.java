@@ -1,8 +1,7 @@
 package ru.practicum.service.dto.compilation;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.validator.constraints.Length;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,11 +13,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewCompilationDto {
-    @NotEmpty
     @Builder.Default
     private List<Long> events = new ArrayList<>();
     private Boolean pinned = false;
 
-    @Length(min = 1, max = 50)
+    @Size(max = 50, message = "Максимальная длина названия - 50 символов")
     private String title;
 }

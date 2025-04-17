@@ -57,16 +57,23 @@ public class UserRequestServiceImpl implements UserRequestService {
             throw new ConflictException("Event is not published");
         }
 
-        if (event.getParticipantLimit() > 0 &&
-                event.getParticipantLimit() <= requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED)) {
+        long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
+        if (event.getParticipantLimit() > 0 && confirmedRequests >= event.getParticipantLimit()) {
             throw new ConflictException("Participant limit reached");
+        }
+
+        RequestStatus status;
+        if (event.getParticipantLimit() == 0 || !event.getRequestModeration()) {
+            status = RequestStatus.CONFIRMED;
+        } else {
+            status = RequestStatus.PENDING;
         }
 
         ParticipationRequest request = ParticipationRequest.builder()
                 .created(LocalDateTime.now())
                 .event(event)
                 .requester(requester)
-                .status(event.getRequestModeration() ? RequestStatus.PENDING : RequestStatus.CONFIRMED)
+                .status(status)
                 .build();
 
         return requestMapper.toDto(requestRepository.save(request));

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.exeption.BadRequestException;
 import ru.practicum.exeption.ConflictException;
 import ru.practicum.exeption.NotFoundException;
 import ru.practicum.mapper.EventMapper;
@@ -136,7 +137,7 @@ public class AdminEventServiceImpl implements AdminEventService {
 
         if (updateRequest.getEventDate() != null) {
             if (updateRequest.getEventDate().isBefore(LocalDateTime.now())) {
-                throw new ConflictException("Event date cannot be in the past");
+                throw new BadRequestException("Event date cannot be in the past");
             }
             event.setEventDate(updateRequest.getEventDate());
         }

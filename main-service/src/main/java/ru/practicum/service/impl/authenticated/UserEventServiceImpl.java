@@ -3,6 +3,7 @@ package ru.practicum.service.impl.authenticated;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.exeption.BadRequestException;
 import ru.practicum.exeption.ConflictException;
 import ru.practicum.exeption.NotFoundException;
 import ru.practicum.mapper.EventMapper;
@@ -81,9 +82,7 @@ public class UserEventServiceImpl implements UserEventService {
     public EventFullDto getUserEvent(Long userId, Long eventId) {
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
-        if (event.getState() != EventState.PUBLISHED) {
-            throw new NotFoundException("Event not published");
-        }
+
         return eventMapper.toFullDto(event);
     }
 
@@ -99,7 +98,7 @@ public class UserEventServiceImpl implements UserEventService {
 
         if (updateRequest.getEventDate() != null &&
                 updateRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException("Event date must be at least 2 hours from now");
+            throw new BadRequestException("Event date must be at least 2 hours from now");
         }
 
         updateEventFields(event, updateRequest);

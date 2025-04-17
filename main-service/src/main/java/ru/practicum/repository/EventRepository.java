@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import ru.practicum.model.Event;
 import ru.practicum.model.enums.EventState;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,9 +21,11 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
 
     boolean existsByIdAndInitiatorId(Long eventId, Long userId);
 
+    Optional<Event> findByIdAndState(Long id, EventState state);
+
     @Query("SELECT COUNT(r) FROM ParticipationRequest r " +
-            "WHERE r.event.id = :eventId AND r.status = ru.practicum.model.enums.RequestStatus.CONFIRMED")
+            "WHERE r.event.id = :eventId AND r.status = 'CONFIRMED'")
     Long countConfirmedRequests(@Param("eventId") Long eventId);
 
-    Optional<Event> findByIdAndState(Long id, EventState state);
+    List<Event> findByState(EventState state);
 }

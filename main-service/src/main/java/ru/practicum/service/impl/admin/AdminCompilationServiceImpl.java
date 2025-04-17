@@ -41,6 +41,8 @@ public class AdminCompilationServiceImpl implements AdminCompilationService {
         if (dto.getEvents() != null && !dto.getEvents().isEmpty()) {
             Set<Event> events = new HashSet<>(eventRepository.findAllById(dto.getEvents()));
             compilation.setEvents(events);
+        } else {
+            compilation.setEvents(new HashSet<>());
         }
 
         Compilation saved = compilationRepository.save(compilation);

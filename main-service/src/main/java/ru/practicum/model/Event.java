@@ -2,16 +2,17 @@ package ru.practicum.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.annotations.DynamicUpdate;
 import ru.practicum.model.enums.EventState;
+import ru.practicum.model.enums.RequestStatus;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "events")
@@ -20,6 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@DynamicUpdate
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,7 +29,6 @@ public class Event {
 
     @NotBlank
     @Size(min = 20, max = 2000)
-    @Column(columnDefinition = "TEXT")
     private String annotation;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -49,6 +50,7 @@ public class Event {
     private Boolean paid = false;
 
     @Column(name = "participant_limit")
+    @Min(0)
     @Builder.Default
     private Integer participantLimit = 0;
 
@@ -65,7 +67,6 @@ public class Event {
     private User initiator;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "state", length = 20)
     private EventState state = EventState.PENDING;
 
     @Column(name = "created_on")
@@ -79,10 +80,15 @@ public class Event {
     @Builder.Default
     private List<ParticipationRequest> requests = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "events")
+    @Column(name = "views")
     @Builder.Default
-    private Set<Compilation> compilations = new HashSet<>();
+    private Long views = 0L;
 
     @Transient
-    private Long views;
+    public Long getConfirmedRequests() {
+        if (requests == null) return 0L;
+        return requests.stream()
+                .filter(r -> r.getStatus() == RequestStatus.CONFIRMED)
+                .count();
+    }
 }

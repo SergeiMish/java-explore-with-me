@@ -1,8 +1,6 @@
 package ru.practicum.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 import ru.practicum.model.Category;
 import ru.practicum.model.Event;
 import ru.practicum.service.dto.event.EventFullDto;
@@ -21,17 +19,15 @@ public interface EventMapper {
     }
 
     @Mapping(target = "eventDate", source = "eventDate", dateFormat = "yyyy-MM-dd HH:mm:ss")
-    @Mapping(target = "confirmedRequests", ignore = true)
-    @Mapping(target = "paid", defaultValue = "false")
+    @Mapping(target = "confirmedRequests", expression = "java(event.getConfirmedRequests())")
+    @Mapping(target = "views", source = "views")
     EventShortDto toShortDto(Event event);
 
     @Mapping(target = "eventDate", source = "eventDate", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "createdOn", dateFormat = "yyyy-MM-dd HH:mm:ss")
     @Mapping(target = "publishedOn", dateFormat = "yyyy-MM-dd HH:mm:ss")
-    @Mapping(target = "confirmedRequests", ignore = true)
-    @Mapping(target = "paid", defaultValue = "false")
-    @Mapping(target = "requestModeration", defaultValue = "true")
-    @Mapping(target = "views", defaultValue = "0L")
+    @Mapping(target = "confirmedRequests", expression = "java(event.getConfirmedRequests())")
+    @Mapping(target = "views", source = "views")
     @Mapping(target = "state", expression = "java(event.getState().name())")
     EventFullDto toFullDto(Event event);
 
@@ -39,7 +35,19 @@ public interface EventMapper {
     @Mapping(target = "state", constant = "PENDING")
     @Mapping(target = "publishedOn", ignore = true)
     @Mapping(target = "requests", ignore = true)
-    @Mapping(target = "compilations", ignore = true)
-    @Mapping(target = "category", source = "category")
+    @Mapping(target = "views", ignore = true)
     Event toEvent(NewEventDto dto);
+
+    @AfterMapping
+    default void setAdditionalFields(@MappingTarget Event event) {
+        if (event.getPaid() == null) {
+            event.setPaid(false);
+        }
+        if (event.getParticipantLimit() == null) {
+            event.setParticipantLimit(0);
+        }
+        if (event.getRequestModeration() == null) {
+            event.setRequestModeration(true);
+        }
+    }
 }
