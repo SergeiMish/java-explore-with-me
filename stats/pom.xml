@@ -12,13 +12,16 @@
     </parent>
 
     <artifactId>stats</artifactId>
-    <packaging>pom</packaging>
+    <properties>
+        <maven.compiler.release>21</maven.compiler.release>
+    </properties>
 
     <modules>
-        <module>server</module>
         <module>stats-client</module>
         <module>stats-model</module>
+        <module>server</module>
     </modules>
+    <packaging>pom</packaging>
 
     <dependencies>
         <dependency>

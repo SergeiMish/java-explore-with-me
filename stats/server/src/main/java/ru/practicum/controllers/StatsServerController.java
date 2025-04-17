@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
-import ru.practicum.mapper.StatsMapper;
 import ru.practicum.service.StatsService;
 
 import java.time.LocalDateTime;
@@ -18,7 +17,6 @@ import java.util.List;
 @RequestMapping
 public class StatsServerController {
     private final StatsService statsService;
-    private final StatsMapper statsMapper;
 
     @PostMapping("/hit")
     @ResponseStatus(HttpStatus.CREATED)
