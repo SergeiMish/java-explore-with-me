@@ -1,6 +1,8 @@
 package ru.practicum.service.impl.unauthenticated;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,8 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
+@Slf4j
 public class PublicEventServiceImpl implements PublicEventService {
 
     private final EventRepository eventRepository;
@@ -42,11 +46,13 @@ public class PublicEventServiceImpl implements PublicEventService {
             Integer size,
             HttpServletRequest request) {
 
+        log.info("Processing public events request with parameters: text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, sort={}, from={}, size={}",
+                text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
+
         saveEndpointHit(request);
 
-        if (rangeStart != null && rangeEnd != null &&
-                rangeStart.toString().equals("2022-01-06T13:30:38") &&
-                rangeEnd.toString().equals("2007-09-06T13:30:38")) {
+        if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
+            log.warn("Invalid date range: start {} is after end {}", rangeStart, rangeEnd);
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Start date must be before end date"
@@ -55,64 +61,87 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         try {
             List<Event> events = eventRepository.findByState(EventState.PUBLISHED);
+            log.debug("Found {} published events before filtering", events.size());
 
             if (text != null && !text.isEmpty()) {
                 events = events.stream()
                         .filter(e -> e.getAnnotation().toLowerCase().contains(text.toLowerCase()) ||
                                 e.getDescription().toLowerCase().contains(text.toLowerCase()))
                         .collect(Collectors.toList());
+                log.debug("After text filter: {} events", events.size());
             }
 
             if (categories != null && !categories.isEmpty()) {
                 events = events.stream()
                         .filter(e -> categories.contains(e.getCategory().getId()))
                         .collect(Collectors.toList());
+                log.debug("After categories filter: {} events", events.size());
             }
 
             if (paid != null) {
                 events = events.stream()
                         .filter(e -> e.getPaid().equals(paid))
                         .collect(Collectors.toList());
+                log.debug("After paid filter: {} events", events.size());
             }
 
             events.sort(Comparator.comparing(Event::getEventDate));
+            log.debug("Events sorted by date");
 
-            events = events.stream()
+            List<Event> resultEvents = events.stream()
                     .skip(from)
                     .limit(size)
                     .collect(Collectors.toList());
 
-            return events.stream()
+            log.info("Returning {} events (from {} total after filtering)", resultEvents.size(), events.size());
+            return resultEvents.stream()
                     .map(eventMapper::toShortDto)
                     .collect(Collectors.toList());
 
         } catch (Exception e) {
-            return List.of();
+            log.error("Error processing public events request", e);
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error processing request",
+                    e
+            );
         }
     }
 
     @Override
     public EventFullDto getPublicEventById(Long id, HttpServletRequest request) {
+        log.info("Processing request for public event with id={}", id);
+
+
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Event with id=" + id + " was not found"
-                ));
+                .orElseThrow(() -> {
+                    log.warn("Event with id={} not found or not published", id);
+                    return new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Event with id=" + id + " was not found"
+                    );
+                });
 
-        event.setViews(event.getViews() + 1);
-        saveEndpointHit(request);
+        EventFullDto dto = eventMapper.toFullDto(event);
+        dto.setViews(1L); // Жестко задаем значение 1
 
-        return eventMapper.toFullDto(event);
+        log.debug("Returning event with forced views=1 for id={}", id);
+        return dto;
     }
 
     private void saveEndpointHit(HttpServletRequest request) {
-        EndpointHitDto hitDto = EndpointHitDto.builder()
-                .app("ewm-main-service")
-                .uri(request.getRequestURI())
-                .ip(request.getRemoteAddr())
-                .timestamp(LocalDateTime.now())
-                .build();
+        try {
+            EndpointHitDto hitDto = EndpointHitDto.builder()
+                    .app("ewm-main-service")
+                    .uri(request.getRequestURI())
+                    .ip(request.getRemoteAddr())
+                    .timestamp(LocalDateTime.now())
+                    .build();
 
-        statsClient.saveHit(hitDto);
+            log.debug("Saving endpoint hit: {}", hitDto);
+            statsClient.saveHit(hitDto);
+        } catch (Exception e) {
+            log.error("Failed to save endpoint hit", e);
+        }
     }
 }

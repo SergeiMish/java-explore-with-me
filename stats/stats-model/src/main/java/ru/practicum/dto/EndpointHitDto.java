@@ -24,11 +24,9 @@ public class EndpointHitDto {
     private String uri;
 
     @NotBlank(message = "IP cannot be blank")
-    @Pattern(regexp = "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$",
-            message = "Invalid IP address format")
     private String ip;
 
     @NotNull(message = "Timestamp cannot be null")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime timestamp;
 }

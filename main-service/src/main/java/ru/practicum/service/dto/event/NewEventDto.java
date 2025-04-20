@@ -16,15 +16,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewEventDto {
-    @NotBlank
+    @NotBlank(message = "Annotation cannot be blank")
     @Size(min = 20, max = 2000)
     private String annotation;
 
     @NotNull
-    @Positive
     private Long category;
 
-    @NotBlank
+    @NotBlank(message = "Description cannot be blank")
     @Size(min = 20, max = 7000)
     private String description;
 

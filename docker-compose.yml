@@ -37,15 +37,14 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9090/actuator/health"]
       interval: 10s
-      timeout: 10s
-      retries: 15
-      start_period: 40s
+      timeout: 15s
+      retries: 20
+      start_period: 60s
     environment:
       DB_HOST: stats-db
       SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 2
 
   ewm-db:
     container_name: ewm-db
@@ -81,11 +80,10 @@ services:
       stats-server:
         condition: service_healthy
     environment:
+      SPRING_DATASOURCE_HIKARI_AUTO-COMMIT: "false"
+      SPRING_JPA_PROPERTIES_HIBERNATE_CONNECTION_PROVIDER_DISABLES_AUTOCOMMIT: "true"
       DB_HOST: ewm-db
       STATS_HOST: stats-server
-      SPRING_DATASOURCE_URL: jdbc:postgresql://ewm-db:5432/ewm_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
       STATS_SERVER_URL: http://stats-server:9090
 
 volumes:

@@ -2,6 +2,7 @@ package ru.practicum.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -23,9 +24,9 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
 
     Optional<Event> findByIdAndState(Long id, EventState state);
 
-    @Query("SELECT COUNT(r) FROM ParticipationRequest r " +
-            "WHERE r.event.id = :eventId AND r.status = 'CONFIRMED'")
-    Long countConfirmedRequests(@Param("eventId") Long eventId);
+    @Modifying
+    @Query("UPDATE Event e SET e.views = e.views + 1 WHERE e.id = :id")
+    void incrementViews(@Param("id") Long id);
 
     List<Event> findByState(EventState state);
 }

@@ -4,7 +4,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.service.dto.event.EventFullDto;
 import ru.practicum.service.dto.event.EventShortDto;
@@ -20,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/users/{userId}/events")
 @RequiredArgsConstructor
+@Slf4j
 public class UserEventController {
     private final UserEventServiceImpl userEventService;
 
@@ -32,11 +35,18 @@ public class UserEventController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public EventFullDto createEvent(
+    public ResponseEntity<EventFullDto> createEvent(
             @PathVariable Long userId,
             @Valid @RequestBody NewEventDto newEventDto) {
-        return userEventService.createEvent(userId, newEventDto);
+        log.info("Received event creation request from user {}: {}", userId, newEventDto);
+        try {
+            EventFullDto createdEvent = userEventService.createEvent(userId, newEventDto);
+            log.info("Event created successfully: {}", createdEvent.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
+        } catch (Exception e) {
+            log.error("Error creating event for user {}: {}", userId, e.getMessage(), e);
+            throw e;
+        }
     }
 
     @GetMapping("/{eventId}")
