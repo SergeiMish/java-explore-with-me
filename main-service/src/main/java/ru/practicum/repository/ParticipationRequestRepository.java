@@ -10,6 +10,7 @@ import ru.practicum.model.enums.RequestStatus;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+
 @Repository
 public interface ParticipationRequestRepository extends JpaRepository<ParticipationRequest, Long> {
 

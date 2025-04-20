@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import ru.practicum.model.Compilation;
 
 import java.util.List;
+
 @Repository
 public interface CompilationRepository extends JpaRepository<Compilation, Long> {
     boolean existsByTitle(String title);
