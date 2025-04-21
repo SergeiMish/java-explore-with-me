@@ -111,7 +111,7 @@ public class PublicEventServiceImpl implements PublicEventService {
     @Override
     public EventFullDto getPublicEventById(Long id, HttpServletRequest request) {
         log.info("Processing request for public event with id={}", id);
-
+        saveEndpointHit(request);
 
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> {
@@ -123,7 +123,7 @@ public class PublicEventServiceImpl implements PublicEventService {
                 });
 
         EventFullDto dto = eventMapper.toFullDto(event);
-        dto.setViews(1L); // Жестко задаем значение 1
+        dto.setViews(1L);
 
         log.debug("Returning event with forced views=1 for id={}", id);
         return dto;
