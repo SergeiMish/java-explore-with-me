@@ -15,7 +15,6 @@ import ru.practicum.service.dto.request.EventRequestStatusUpdateRequest;
 import ru.practicum.service.dto.request.EventRequestStatusUpdateResult;
 import ru.practicum.service.dto.request.ParticipationRequestDto;
 import ru.practicum.service.dto.request.UpdateEventUserRequest;
-import ru.practicum.service.impl.authenticated.UserEventServiceImpl;
 import ru.practicum.service.interfaces.authenticated.UserEventService;
 
 import java.util.List;
@@ -40,14 +39,9 @@ public class UserEventController {
             @PathVariable Long userId,
             @Valid @RequestBody NewEventDto newEventDto) {
         log.info("Received event creation request from user {}: {}", userId, newEventDto);
-        try {
-            EventFullDto createdEvent = userEventService.createEvent(userId, newEventDto);
-            log.info("Event created successfully: {}", createdEvent.getId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
-        } catch (Exception e) {
-            log.error("Error creating event for user {}: {}", userId, e.getMessage(), e);
-            throw e;
-        }
+        EventFullDto createdEvent = userEventService.createEvent(userId, newEventDto);
+        log.info("Event created successfully: {}", createdEvent.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
     }
 
     @GetMapping("/{eventId}")

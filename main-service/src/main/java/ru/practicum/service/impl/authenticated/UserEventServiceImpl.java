@@ -1,7 +1,6 @@
 package ru.practicum.service.impl.authenticated;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.exeption.BadRequestException;
@@ -15,7 +14,6 @@ import ru.practicum.model.ParticipationRequest;
 import ru.practicum.model.User;
 import ru.practicum.model.enums.EventState;
 import ru.practicum.model.enums.RequestStatus;
-import ru.practicum.model.enums.StateAction;
 import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.ParticipationRequestRepository;
@@ -29,11 +27,9 @@ import ru.practicum.service.dto.request.ParticipationRequestDto;
 import ru.practicum.service.dto.request.UpdateEventUserRequest;
 import ru.practicum.service.interfaces.authenticated.UserEventService;
 
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;

@@ -28,10 +28,11 @@ public class User {
     @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "initiator")
+    @OneToMany(mappedBy = "initiator", fetch = FetchType.LAZY)
     @Builder.Default
     private List<Event> organizedEvents = new ArrayList<>();
 
-    @OneToMany(mappedBy = "requester")
-    private List<ParticipationRequest> requests;
+    @OneToMany(mappedBy = "requester", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<ParticipationRequest> requests = new ArrayList<>();
 }

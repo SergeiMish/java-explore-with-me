@@ -76,7 +76,7 @@ public class Event {
     @Column(name = "published_on")
     private LocalDateTime publishedOn;
 
-    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<ParticipationRequest> requests = new ArrayList<>();
 

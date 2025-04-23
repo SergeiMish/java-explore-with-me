@@ -12,7 +12,6 @@ import ru.practicum.exeption.BadRequestException;
 import ru.practicum.exeption.ConflictException;
 import ru.practicum.exeption.NotFoundException;
 import ru.practicum.mapper.EventMapper;
-import ru.practicum.model.Category;
 import ru.practicum.model.Event;
 import ru.practicum.model.enums.EventState;
 import ru.practicum.model.enums.RequestStatus;
