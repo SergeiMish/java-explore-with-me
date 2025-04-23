@@ -1,5 +1,6 @@
 package ru.practicum.service.impl.admin;
 
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -19,12 +20,16 @@ import ru.practicum.model.enums.StateAction;
 import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.ParticipationRequestRepository;
+import ru.practicum.service.dto.event.EventFilterParams;
 import ru.practicum.service.dto.event.EventFullDto;
 import ru.practicum.service.dto.request.UpdateEventAdminRequest;
 import ru.practicum.service.interfaces.admin.AdminEventService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 
@@ -40,47 +45,56 @@ public class AdminEventServiceImpl implements AdminEventService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<EventFullDto> searchEvents(
-            List<Long> users,
-            List<EventState> states,
-            List<Long> categories,
-            LocalDateTime rangeStart,
-            LocalDateTime rangeEnd,
-            Integer from,
-            Integer size) {
+    public List<EventFullDto> searchEvents(EventFilterParams eventFilterParams) {
+        Specification<Event> spec = buildSpecification(eventFilterParams);
+        Pageable pageable = buildPageable(eventFilterParams.getFrom(), eventFilterParams.getSize());
 
-        Specification<Event> spec = Specification.where(null);
-
-        if (users != null && !users.isEmpty()) {
-            spec = spec.and((root, query, cb) -> root.get("initiator").get("id").in(users));
-        }
-
-        if (states != null && !states.isEmpty()) {
-            spec = spec.and((root, query, cb) -> root.get("state").in(states));
-        }
-
-        if (categories != null && !categories.isEmpty()) {
-            spec = spec.and((root, query, cb) -> root.get("category").get("id").in(categories));
-        }
-
-        if (rangeStart != null) {
-            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("eventDate"), rangeStart));
-        }
-
-        if (rangeEnd != null) {
-            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("eventDate"), rangeEnd));
-        }
-
-        Pageable pageable = PageRequest.of(from / size, size);
         List<Event> events = eventRepository.findAll(spec, pageable).getContent();
 
         return events.stream()
-                .map(event -> {
-                    EventFullDto dto = eventMapper.toFullDto(event);
-                    dto.setConfirmedRequests(getConfirmedRequests(event.getId()));
-                    return dto;
-                })
+                .map(this::convertToDtoWithConfirmedRequests)
                 .collect(Collectors.toList());
+    }
+
+    private Specification<Event> buildSpecification(EventFilterParams params) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (params.getUsers() != null && !params.getUsers().isEmpty()) {
+                predicates.add(root.get("initiator").get("id").in(params.getUsers()));
+            }
+
+            if (params.getStates() != null && !params.getStates().isEmpty()) {
+                predicates.add(root.get("state").in(params.getStates()));
+            }
+
+            if (params.getCategories() != null && !params.getCategories().isEmpty()) {
+                predicates.add(root.get("category").get("id").in(params.getCategories()));
+            }
+
+            if (params.getRangeStart() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("eventDate"), params.getRangeStart()));
+            }
+
+            if (params.getRangeEnd() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("eventDate"), params.getRangeEnd()));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
+    private Pageable buildPageable(Integer from, Integer size) {
+        if (from == null || size == null || size <= 0) {
+            throw new BadRequestException("Invalid pagination parameters");
+        }
+        return PageRequest.of(from / size, size);
+    }
+
+    private EventFullDto convertToDtoWithConfirmedRequests(Event event) {
+        EventFullDto dto = eventMapper.toFullDto(event);
+        dto.setConfirmedRequests(getConfirmedRequests(event.getId()));
+        return dto;
     }
 
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateRequest) {
@@ -95,7 +109,6 @@ public class AdminEventServiceImpl implements AdminEventService {
         updateEventFields(event, updateRequest);
         Event updatedEvent = eventRepository.save(event);
 
-        // Логирование для отладки
         log.info("Updated event state: {}", updatedEvent.getState());
 
         return eventMapper.toFullDto(updatedEvent);
@@ -121,45 +134,30 @@ public class AdminEventServiceImpl implements AdminEventService {
     }
 
     private void updateEventFields(Event event, UpdateEventAdminRequest updateRequest) {
-        if (updateRequest.getAnnotation() != null) {
-            event.setAnnotation(updateRequest.getAnnotation());
-        }
-
-        if (updateRequest.getCategory() != null) {
-            Category category = categoryRepository.findById(updateRequest.getCategory())
-                    .orElseThrow(() -> new NotFoundException("Category not found"));
-            event.setCategory(category);
-        }
-
-        if (updateRequest.getDescription() != null) {
-            event.setDescription(updateRequest.getDescription());
-        }
-
-        if (updateRequest.getEventDate() != null) {
-            if (updateRequest.getEventDate().isBefore(LocalDateTime.now())) {
+        setIfNotNull(updateRequest.getAnnotation(), event::setAnnotation);
+        setIfNotNull(updateRequest.getDescription(), event::setDescription);
+        setIfNotNull(updateRequest.getEventDate(), date -> {
+            if (date.isBefore(LocalDateTime.now())) {
                 throw new BadRequestException("Event date cannot be in the past");
             }
-            event.setEventDate(updateRequest.getEventDate());
-        }
+            event.setEventDate(date);
+        });
+        setIfNotNull(updateRequest.getPaid(), event::setPaid);
+        setIfNotNull(updateRequest.getParticipantLimit(), event::setParticipantLimit);
+        setIfNotNull(updateRequest.getRequestModeration(), event::setRequestModeration);
+        setIfNotNull(updateRequest.getTitle(), event::setTitle);
 
-        if (updateRequest.getLocation() != null) {
-            event.setLocation(updateRequest.getLocation());
-        }
+        Optional.ofNullable(updateRequest.getLocation()).ifPresent(event::setLocation);
 
-        if (updateRequest.getPaid() != null) {
-            event.setPaid(updateRequest.getPaid());
-        }
+        Optional.ofNullable(updateRequest.getCategory())
+                .map(categoryId -> categoryRepository.findById(categoryId)
+                        .orElseThrow(() -> new NotFoundException("Category not found")))
+                .ifPresent(event::setCategory);
+    }
 
-        if (updateRequest.getParticipantLimit() != null) {
-            event.setParticipantLimit(updateRequest.getParticipantLimit());
-        }
-
-        if (updateRequest.getRequestModeration() != null) {
-            event.setRequestModeration(updateRequest.getRequestModeration());
-        }
-
-        if (updateRequest.getTitle() != null) {
-            event.setTitle(updateRequest.getTitle());
+    private <T> void setIfNotNull(T value, Consumer<T> setter) {
+        if (value != null) {
+            setter.accept(value);
         }
     }
 

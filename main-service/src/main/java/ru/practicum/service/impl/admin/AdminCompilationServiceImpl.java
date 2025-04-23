@@ -21,6 +21,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AdminCompilationServiceImpl implements AdminCompilationService {
 
     private final CompilationRepository compilationRepository;
@@ -28,7 +29,6 @@ public class AdminCompilationServiceImpl implements AdminCompilationService {
     private final CompilationMapper compilationMapper;
 
     @Override
-    @Transactional
     public CompilationDto createCompilation(NewCompilationDto dto) {
         if (compilationRepository.existsByTitle(dto.getTitle())) {
             throw new ConflictException("Подборка с таким названием уже существует");
@@ -50,7 +50,6 @@ public class AdminCompilationServiceImpl implements AdminCompilationService {
     }
 
     @Override
-    @Transactional
     public void deleteCompilation(Long compId) {
         if (!compilationRepository.existsById(compId)) {
             throw new NotFoundException("Подборка с id=" + compId + " не найдена");
@@ -59,7 +58,6 @@ public class AdminCompilationServiceImpl implements AdminCompilationService {
     }
 
     @Override
-    @Transactional
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest updateRequest) {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException("Подборка не найдена"));

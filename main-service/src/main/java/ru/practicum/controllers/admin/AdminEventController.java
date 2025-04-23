@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.model.enums.EventState;
+import ru.practicum.service.dto.event.EventFilterParams;
 import ru.practicum.service.dto.event.EventFullDto;
 import ru.practicum.service.dto.request.UpdateEventAdminRequest;
 import ru.practicum.service.interfaces.admin.AdminEventService;
@@ -32,7 +33,7 @@ public class AdminEventController {
             @RequestParam(defaultValue = "0") @Min(0) Integer from,
             @RequestParam(defaultValue = "10") @Positive Integer size) {
 
-        return adminEventService.searchEvents(
+        EventFilterParams filterParams = new EventFilterParams(
                 users,
                 parseStates(states),
                 categories,
@@ -41,6 +42,8 @@ public class AdminEventController {
                 from,
                 size
         );
+
+        return adminEventService.searchEvents(filterParams);
     }
 
     @PatchMapping("/{eventId}")

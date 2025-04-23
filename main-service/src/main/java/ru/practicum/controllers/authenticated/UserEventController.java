@@ -16,6 +16,7 @@ import ru.practicum.service.dto.request.EventRequestStatusUpdateResult;
 import ru.practicum.service.dto.request.ParticipationRequestDto;
 import ru.practicum.service.dto.request.UpdateEventUserRequest;
 import ru.practicum.service.impl.authenticated.UserEventServiceImpl;
+import ru.practicum.service.interfaces.authenticated.UserEventService;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class UserEventController {
-    private final UserEventServiceImpl userEventService;
+    private final UserEventService userEventService;
 
     @GetMapping
     public List<EventShortDto> getUserEvents(

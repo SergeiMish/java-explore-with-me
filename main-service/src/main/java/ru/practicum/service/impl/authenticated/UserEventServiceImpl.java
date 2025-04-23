@@ -1,6 +1,7 @@
 package ru.practicum.service.impl.authenticated;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.exeption.BadRequestException;
@@ -28,9 +29,13 @@ import ru.practicum.service.dto.request.ParticipationRequestDto;
 import ru.practicum.service.dto.request.UpdateEventUserRequest;
 import ru.practicum.service.interfaces.authenticated.UserEventService;
 
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Service
@@ -169,41 +174,43 @@ public class UserEventServiceImpl implements UserEventService {
     }
 
     private void updateEventFields(Event event, UpdateEventUserRequest updateRequest) {
-        if (updateRequest.getAnnotation() != null) {
-            event.setAnnotation(updateRequest.getAnnotation());
+
+        setIfNotNull(updateRequest.getAnnotation(), event::setAnnotation);
+        setIfNotNull(updateRequest.getDescription(), event::setDescription);
+        setIfNotNull(updateRequest.getEventDate(), event::setEventDate);
+        setIfNotNull(updateRequest.getPaid(), event::setPaid);
+        setIfNotNull(updateRequest.getParticipantLimit(), event::setParticipantLimit);
+        setIfNotNull(updateRequest.getTitle(), event::setTitle);
+
+        Optional.ofNullable(updateRequest.getCategory())
+                .map(categoryId -> categoryRepository.findById(categoryId)
+                        .orElseThrow(() -> new NotFoundException("Category not found")))
+                .ifPresent(event::setCategory);
+
+        Optional.ofNullable(updateRequest.getStateAction())
+                .ifPresent(action -> {
+                    switch (action) {
+                        case SEND_TO_REVIEW:
+                            validateState(event, EventState.CANCELED, "Only canceled events can be sent to review");
+                            event.setState(EventState.PENDING);
+                            break;
+                        case CANCEL_REVIEW:
+                            validateState(event, EventState.PENDING, "Only pending events can be canceled");
+                            event.setState(EventState.CANCELED);
+                            break;
+                    }
+                });
+    }
+
+    private <T> void setIfNotNull(T value, Consumer<T> setter) {
+        if (value != null) {
+            setter.accept(value);
         }
-        if (updateRequest.getCategory() != null) {
-            Category category = categoryRepository.findById(updateRequest.getCategory())
-                    .orElseThrow(() -> new NotFoundException("Category not found"));
-            event.setCategory(category);
-        }
-        if (updateRequest.getDescription() != null) {
-            event.setDescription(updateRequest.getDescription());
-        }
-        if (updateRequest.getEventDate() != null) {
-            event.setEventDate(updateRequest.getEventDate());
-        }
-        if (updateRequest.getPaid() != null) {
-            event.setPaid(updateRequest.getPaid());
-        }
-        if (updateRequest.getParticipantLimit() != null) {
-            event.setParticipantLimit(updateRequest.getParticipantLimit());
-        }
-        if (updateRequest.getTitle() != null) {
-            event.setTitle(updateRequest.getTitle());
-        }
-        if (updateRequest.getStateAction() != null) {
-            if (updateRequest.getStateAction() == StateAction.SEND_TO_REVIEW) {
-                if (event.getState() != EventState.CANCELED) {
-                    throw new ConflictException("Only canceled events can be sent to review");
-                }
-                event.setState(EventState.PENDING);
-            } else if (updateRequest.getStateAction() == StateAction.CANCEL_REVIEW) {
-                if (event.getState() != EventState.PENDING) {
-                    throw new ConflictException("Only pending events can be canceled");
-                }
-                event.setState(EventState.CANCELED);
-            }
+    }
+
+    private void validateState(Event event, EventState requiredState, String errorMessage) {
+        if (event.getState() != requiredState) {
+            throw new ConflictException(errorMessage);
         }
     }
 
