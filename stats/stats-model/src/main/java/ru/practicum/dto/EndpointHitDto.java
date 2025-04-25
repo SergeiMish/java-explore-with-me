@@ -3,7 +3,6 @@ package ru.practicum.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -24,8 +23,6 @@ public class EndpointHitDto {
     private String uri;
 
     @NotBlank(message = "IP cannot be blank")
-    @Pattern(regexp = "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$",
-            message = "Invalid IP address format")
     private String ip;
 
     @NotNull(message = "Timestamp cannot be null")

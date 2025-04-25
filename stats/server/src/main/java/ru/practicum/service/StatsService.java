@@ -1,11 +1,11 @@
 package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.exeption.DataRetrievalException;
-import ru.practicum.exeption.NotFoundException;
 import ru.practicum.exeption.ValidationException;
 import ru.practicum.mapper.StatsMapper;
 import ru.practicum.model.Hit;
@@ -19,13 +19,20 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class StatsService {
     private final HitRepository hitRepository;
     private final StatsMapper statsMapper;
 
     public void saveHit(EndpointHitDto endpointHitDto) {
-        Hit hit = statsMapper.toHit(endpointHitDto);
-        hitRepository.save(hit);
+        try {
+            Hit hit = statsMapper.toHit(endpointHitDto);
+            hitRepository.save(hit);
+            log.info("Hit saved: {}", hit);
+        } catch (Exception e) {
+            log.error("Failed to save hit: {}", endpointHitDto, e);
+            throw new DataRetrievalException("Failed to save hit", e);
+        }
     }
 
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end,
@@ -33,9 +40,6 @@ public class StatsService {
         validateDates(start, end);
 
         List<ViewStatsProjection> stats = getStatsFromRepository(start, end, uris, unique);
-        if (stats.isEmpty()) {
-            throw new NotFoundException("No statistics found for given parameters");
-        }
 
         return stats.stream()
                 .map(statsMapper::toViewStatsDto)
@@ -45,16 +49,26 @@ public class StatsService {
     private List<ViewStatsProjection> getStatsFromRepository(LocalDateTime start, LocalDateTime end,
                                                              List<String> uris, boolean unique) {
         try {
+            long startTime = System.currentTimeMillis();
+            List<ViewStatsProjection> result;
+
             if (unique) {
-                return uris == null || uris.isEmpty() ?
+                result = uris == null || uris.isEmpty() ?
                         hitRepository.findUniqueStats(start, end) :
                         hitRepository.findUniqueStatsByUris(start, end, uris);
             } else {
-                return uris == null || uris.isEmpty() ?
+                result = uris == null || uris.isEmpty() ?
                         hitRepository.findStats(start, end) :
                         hitRepository.findStatsByUris(start, end, uris);
             }
+
+            long duration = System.currentTimeMillis() - startTime;
+            log.debug("Запрос к БД выполнен за {} мс. Найдено {} записей", duration, result.size());
+            return result;
+
         } catch (Exception e) {
+            log.error("Ошибка при запросе статистики из БД. Параметры: start={}, end={}, uris={}, unique={}",
+                    start, end, uris, unique, e);
             throw new DataRetrievalException("Failed to retrieve statistics", e);
         }
     }

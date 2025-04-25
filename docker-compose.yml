@@ -1,8 +1,16 @@
 version: '3.8'
 
+networks:
+  app-network:
+    driver: bridge
+    name: explore-with-me-network
+
 services:
   stats-db:
+    container_name: stats-db
     image: postgres:16.1
+    networks:
+      - app-network
     environment:
       POSTGRES_DB: stats_db
       POSTGRES_USER: postgres
@@ -12,61 +20,71 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    ports:
+      - "5433:5432"
 
   stats-server:
+    container_name: stats-server
     image: stats-server
     build: ./stats/server
+    networks:
+      - app-network
     ports:
       - "9090:9090"
     depends_on:
       stats-db:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:9090/actuator/health || exit 1" ]
+      test: ["CMD", "curl", "-f", "http://localhost:9090/actuator/health"]
       interval: 10s
-      timeout: 10s
-      retries: 15
-      start_period: 40s
+      timeout: 15s
+      retries: 20
+      start_period: 60s
     environment:
+      DB_HOST: stats-db
       SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 2
-
-
-  stats-client:
-    image: stats-client
-    build: ./stats/stats-client
-    ports:
-      - "9091:9091"
-    depends_on:
-      stats-server:
-        condition: service_healthy
-    environment:
-      WAIT_HOSTS: stats-server:9090
-      WAIT_HOSTS_TIMEOUT: 300
 
   ewm-db:
+    container_name: ewm-db
     image: postgres:16.1
+    networks:
+      - app-network
     environment:
       POSTGRES_DB: ewm_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ewm_db"]
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 10s
 
   ewm-service:
+    container_name: ewm-service
     image: ewm-service
     build: ./main-service
+    networks:
+      - app-network
     ports:
       - "8080:8080"
     depends_on:
       ewm-db:
         condition: service_healthy
+      stats-server:
+        condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://ewm-db:5432/ewm_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_HIKARI_AUTO-COMMIT: "false"
+      SPRING_JPA_PROPERTIES_HIBERNATE_CONNECTION_PROVIDER_DISABLES_AUTOCOMMIT: "true"
+      DB_HOST: ewm-db
+      STATS_HOST: stats-server
+      STATS_SERVER_URL: http://stats-server:9090
+
+volumes:
+  postgres_data:

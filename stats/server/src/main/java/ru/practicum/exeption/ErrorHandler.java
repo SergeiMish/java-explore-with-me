@@ -3,6 +3,7 @@ package ru.practicum.exeption;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -41,5 +42,14 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleDataRetrievalException(DataRetrievalException e) {
         return new ErrorResponse("DATA_RETRIEVAL_ERROR", e.getMessage());
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleMissingParams(MissingServletRequestParameterException e) {
+        return new ErrorResponse(
+                "Missing Parameter",
+                "Required parameter '" + e.getParameterName() + "' is missing"
+        );
     }
 }
