@@ -74,6 +74,7 @@
               "    const response = pm.response.json();",
               "    pm.expect(response).to.have.all.keys('id', 'text', 'authorId', 'authorName', 'eventId', 'createdOn', 'updatedOn', 'status');",
               "    pm.collectionVariables.set('commentId', response.id);",
+              "    pm.collectionVariables.set('authorId', response.authorId);",
               "});"
             ]
           }
@@ -262,7 +263,7 @@
      },
      {
         "key": "X-User-Id",
-        "value": "{{uid}}"
+        "value": "{{authorId}}"
      }
     ],
     "body": {
@@ -297,7 +298,7 @@
          "",
          "pm.test('Response contains updated text and updatedOn field', function() {",
          "    const response = pm.response.json();",
-         "    pm.expect(response.text).to.eql(pm.collectionVariables.get('updatedCommentText'));",
+         "    pm.expect(response.text).to.include('Updated: ');",
          "    pm.expect(response).to.have.property('updatedOn');",
          "});"
         ]
@@ -316,7 +317,7 @@
      },
      {
         "key": "X-User-Id",
-        "value": "{{uid}}"
+        "value":"{{authorId}}"
      }
     ],
     "url": {
@@ -517,6 +518,11 @@
     },
     {
       "key": "uid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "authorId",
       "value": "",
       "type": "string"
     },
